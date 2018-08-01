@@ -64,14 +64,14 @@ def set_nofollow(attrs, new=False):
 __ALLOWED_TAGS =['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'hr', 'pre']
 @app.template_filter('markdown')
 def markdown_filter(s):
-    raw = bleach.clean(markdown.markdown('' if not s else s), 
+    raw = bleach.clean(markdown.markdown('' if not s else s),
                     tags=bleach.ALLOWED_TAGS+__ALLOWED_TAGS)
     raw = bleach.linkify(raw, callbacks=[set_nofollow])
     return Markup(raw)
 
 """
 Account Silliness
-""" 
+"""
 @app.before_request
 def security_check():
     request.user = l.get_user(session.get('userid'))
@@ -81,7 +81,7 @@ def security_check():
         return redirect(url_for('login'))
 
     path = request.path
-    if (request.user and path.startswith('/admin') 
+    if (request.user and path.startswith('/admin')
             and request.user.email not in _ADMIN_EMAILS):
         abort(403)
 
@@ -136,8 +136,14 @@ def new_user_post():
     if uid == -1:
         flash('An account with that email address already exists')
         return redirect(url_for('login'))
-    l.email_new_user_pending(email, name)
-    flash('You will be able to log in after your account is approved!')
+
+    try:
+        l.email_new_user_pending(email, name)
+        flash('You will be able to log in after your account is approved!')
+    except Exception as e:
+        app.logger.error('Unable to send out and email. (%s)', e)
+        flash('Unable to send out and email. (%s)' % e)
+
     return redirect(url_for('login'))
 
 @app.route('/user/logout/')
@@ -191,7 +197,7 @@ def show_votes():
 
 @app.route('/unread/')
 def show_unread():
-    return render_template('unread.html', unread=l.get_unread(request.user.id)) 
+    return render_template('unread.html', unread=l.get_unread(request.user.id))
 
 """
 Batch Actions
@@ -341,7 +347,7 @@ def vote(id):
         scores[s.id] = int(request.values['standard-{}'.format(s.id)])
     nominate = request.values.get('nominate', '0') == '1'
     l.vote(request.user.id, id, scores, nominate)
-    return render_template('user_vote_snippet.html', 
+    return render_template('user_vote_snippet.html',
                             standards=l.get_standards(),
                             votes = l.get_votes(id),
                             existing_vote=l.get_user_vote(request.user.id, id))
@@ -351,7 +357,7 @@ def comment(id):
     comment = request.values.get('comment').strip()
     if comment:
         l.add_to_discussion(request.user.id, id, comment, feedback=False)
-    return render_template('discussion_snippet.html', 
+    return render_template('discussion_snippet.html',
             unread = l.is_unread(request.user.id, id),
             discussion = l.get_discussion(id))
 
@@ -362,14 +368,14 @@ def feedback(id):
     comment = request.values.get('feedback').strip()
     if comment:
         l.add_to_discussion(request.user.id, id, comment, feedback=True)
-    return render_template('discussion_snippet.html', 
+    return render_template('discussion_snippet.html',
             unread = l.is_unread(request.user.id, id),
             discussion = l.get_discussion(id))
 
 @app.route('/screening/<int:id>/mark_read/', methods=['POST'])
 def mark_read(id):
     l.mark_read(request.user.id, id)
-    return render_template('discussion_snippet.html', 
+    return render_template('discussion_snippet.html',
             unread = l.is_unread(request.user.id, id),
             discussion = l.get_discussion(id))
 
@@ -393,7 +399,7 @@ def author_feedback(key):
     if not name:
         return render_template('bad_feedback_key.html')
     proposal = l.get_proposal(id)
-    return render_template('author_feedback.html', name=name, 
+    return render_template('author_feedback.html', name=name,
                             proposal=proposal, messages=l.get_discussion(id))
 
 
@@ -405,7 +411,7 @@ def author_post_feedback(key):
     if not name:
         return render_template('bad_feedback_key.html')
     message = request.values.get('message', '').strip()
-    redir = redirect(url_for('author_feedback', key=key)) 
+    redir = redirect(url_for('author_feedback', key=key))
     if not message:
         flash('Empty message')
         return redir
@@ -456,4 +462,4 @@ def pick():
     return redirect(url_for('screening', id=id))
 
 if __name__ == '__main__':
-    app.run(port=4000, debug=True)
+    app.run('0.0.0.0', port=4000, debug=True)

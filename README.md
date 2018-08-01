@@ -1,6 +1,8 @@
 PyCon Program Committee Web App
 -------------------------------
 
+> WARNING: This is forked from njl/progcom by @njl and customized for **PyCon Canada 2018**.
+
 The goal of this app is to provide a useful tool for asynchronous review of
 PyCon talk submissions. The program committee's job is extensive and daunting,
 and I'm trying to knock together a simple web app to allow the work to proceed
@@ -37,7 +39,7 @@ something like `sudo -u postgres psql`. On OSX, if you've installed postgresql
 via brew, with something like `brew install postgresql`, you can probably just
 type `psql`.
 
-You can create the test database and test user via 
+You can create the test database and test user via
 `psql template1 < setup_db.sql`.
 
 The unit tests will create the tables for you, or you can do something like

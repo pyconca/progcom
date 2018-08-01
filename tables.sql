@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE public.users (
     id              BIGSERIAL PRIMARY KEY,
     email           VARCHAR(254) NOT NULL,
     display_name    VARCHAR(80),
@@ -6,10 +6,11 @@ CREATE TABLE users (
     created_on      TIMESTAMP WITH TIME ZONE DEFAULT now(),
     approved_on     TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
+
 CREATE UNIQUE INDEX idx_users_email
     ON users (lower(email));
 
-CREATE TABLE batchgroups (
+CREATE TABLE public.batchgroups (
     id              BIGSERIAL PRIMARY KEY,
     name            VARCHAR(254),
     author_emails   VARCHAR(254)[],
@@ -17,7 +18,7 @@ CREATE TABLE batchgroups (
 );
 
 
-CREATE TABLE proposals (
+CREATE TABLE public.proposals (
     id                      BIGINT PRIMARY KEY,
     updated                 TIMESTAMP WITH TIME ZONE DEFAULT now(),
     added_on                TIMESTAMP WITH TIME ZONE DEFAULT now(),
@@ -36,7 +37,7 @@ CREATE TABLE proposals (
     accepted                BOOLEAN DEFAULT NULL
 );
 
-CREATE TABLE schedules (
+CREATE TABLE public.schedules (
     id          BIGSERIAL PRIMARY KEY,
     proposal    BIGINT REFERENCES proposals UNIQUE DEFAULT NULL,
     day         INT,
@@ -55,7 +56,7 @@ CREATE AGGREGATE email_aggregate (basetype = VARCHAR(254)[],
 
 CREATE OR REPLACE FUNCTION batch_change() RETURNS trigger AS
 $$
-BEGIN 
+BEGIN
     UPDATE batchgroups SET
     author_emails=(SELECT email_aggregate(author_emails)
                     FROM proposals WHERE batchgroup = NEW.batchgroup)
@@ -67,7 +68,7 @@ $$ LANGUAGE 'plpgsql';
 CREATE TRIGGER batch_change_trigger AFTER INSERT OR UPDATE
     ON proposals FOR EACH ROW EXECUTE PROCEDURE batch_change();
 
-CREATE TABLE batchvotes (
+CREATE TABLE public.batchvotes (
     batchgroup      BIGINT REFERENCES batchgroups,
     voter           BIGINT REFERENCES users,
     accept          BIGINT[],
@@ -77,12 +78,12 @@ CREATE TABLE batchvotes (
 
 );
 
-CREATE TABLE standards (
+CREATE TABLE public.standards (
     id          BIGSERIAL PRIMARY KEY,
     description VARCHAR(127)
 );
 
-CREATE TABLE votes (
+CREATE TABLE public.votes (
     id          BIGSERIAL PRIMARY KEY,
 
     scores      JSON,
@@ -99,8 +100,8 @@ CREATE TABLE votes (
 
 CREATE OR REPLACE FUNCTION votes_change() RETURNS trigger AS
 $$
-BEGIN 
-    UPDATE proposals SET 
+BEGIN
+    UPDATE proposals SET
         vote_count=(SELECT count(*) FROM votes WHERE proposal=NEW.proposal),
         voters = ARRAY(SELECT voter FROM votes WHERE proposal=NEW.proposal)
         WHERE id=NEW.proposal;
@@ -111,7 +112,7 @@ $$ LANGUAGE 'plpgsql';
 CREATE TRIGGER votes_change_trigger AFTER INSERT OR UPDATE
     ON votes FOR EACH ROW EXECUTE PROCEDURE votes_change();
 
-CREATE TABLE discussion (
+CREATE TABLE public.discussion (
     id          BIGSERIAL PRIMARY KEY,
 
     name        VARCHAR(254) DEFAULT NULL, --Author feedback force
@@ -122,13 +123,13 @@ CREATE TABLE discussion (
     feedback    BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE unread (
+CREATE TABLE public.unread (
     proposal    BIGINT REFERENCES proposals,
     voter       BIGINT REFERENCES users,
     PRIMARY KEY (proposal, voter)
 );
 
-CREATE TABLE batchmessages (
+CREATE TABLE public.batchmessages (
     id          BIGSERIAL PRIMARY KEY,
 
     frm         BIGINT REFERENCES users,
@@ -137,13 +138,13 @@ CREATE TABLE batchmessages (
     created     TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE TABLE batchunread (
+CREATE TABLE public.batchunread (
     batch   BIGINT REFERENCES batchgroups,
     voter       BIGINT REFERENCES users,
     PRIMARY KEY (batch, voter)
 );
 
-CREATE TABLE confirmations (
+CREATE TABLE public.confirmations (
     id              BIGSERIAL PRIMARY KEY,
     proposal        BIGINT REFERENCES proposals,
     email           VARCHAR(254),
