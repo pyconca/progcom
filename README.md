@@ -1,5 +1,4 @@
-PyCon Program Committee Web App
--------------------------------
+# PyCon Program Committee Web App
 
 > WARNING: This is forked from njl/progcom by @njl and customized for **PyCon Canada 2018**.
 
@@ -11,10 +10,32 @@ busy professionals to come together at the same time to chat on IRC is hard,
 and doesn't feel very scalable. This is my first step toward understanding how
 to scale the whole thing.
 
+## Instructions for PyCon Canada 2018
 
+The setup heavily uses Docker as a tool of choice.
 
-Configuring the Applications
-------------------------
+### Getting Started
+
+1. Install Docker
+2. Clone this repository.
+3. Run the migration by executing `make dev-db migration-pause migration`.
+4. Run `docker-compose -f docker/dev.yml up -d app` to start the service.
+
+At the point, you can access to the app at http://localhost:4000/.
+
+> To reset everything (data), run `make dev-db-reset`.
+
+### Customizations
+
+- [ ] If we try to avoid paying SendGrid, instead of using SendGrid for daily report, we will use Slack notification (webhook) instead.
+- [ ] If we try to avoid paying SendGrid, the user approval process can be done manually by running: `update users set approved_on = CURRENT_TIMESTAMP where email = :email`.
+- [ ] Update `pull_updates.py` to decouple from the APIs from `us.pycon.org` as we are integrating with Papercall (with djangocon/papercall-api-import from @djangocon).
+    - [ ] ETL: Papercall → CSV (djangocon/papercall-api-import)
+    - [ ] ETL: CSV → PostgreSQL DB (no script implemented at the moment)
+
+## Original Documentations
+
+### Configuring the Applications
 
 The application picks up configuration from environment variables. I like to
 use the envdir tool, but you can set them however you like. A complete set of
@@ -27,8 +48,7 @@ install daemontools` on Ubuntu and Debian.
 As configured by the values in `dev-config`, the application connects to a local
 postgresql database, with username, password, and database name 'test'.
 
-Configuring the Database
----------------------
+### Configuring the Database
 
 The application uses a Postgresql database. If you're not familiar with setting
 up Postgresql, I've included `setup_db.sql` for you. Getting to the point where
@@ -48,8 +68,8 @@ The unit tests will create the tables for you, or you can do something like
 
 
 
-Running the Application
------------------
+### Running the Application
+
 Make a virtualenv, `pip install -r requirements.pip`. Run the application
 locally via `envdir dev-config ./app.py`, run the tests via
 `envdir dev-config py.test`.
@@ -61,8 +81,7 @@ an email from the sequence `user{0-24}@example.com`, and a password of `abc123`.
 
 
 
-Deployment
-----------
+### Deployment
 
 You'll need deploy-config in your root directory, which should have all the
 appropriate secrets. From the application's root directory, you can run
@@ -70,8 +89,8 @@ appropriate secrets. From the application's root directory, you can run
 
 
 
-Understanding The PyCon Talk Review Process
-------------
+### Understanding The PyCon Talk Review Process
+
 The process runs in two rounds; the first is called "screening", and is
 basically about winnowing out talks. Talks which aren't relevant for
 PyCon, have poorly prepared proposals, or otherwise won't make the cut, get

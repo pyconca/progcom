@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+    app:
+        image: progcom
+        build: ../
+        container_name: app
+        hostname: app
+        ports:
+            - "4000:4000"
+        volumes:
+            - ../:/opt/progcom
+        # command: tail -f /dev/null # for debugging
+    psqldb:
+        image: postgres
+        container_name: psqldb
+        hostname: psqldb
+        restart: unless-stopped
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: test
+            POSTGRES_PASSWORD: test

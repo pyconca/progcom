@@ -1,0 +1,2 @@
+DROP DATABASE IF EXISTS progcom;
+CREATE DATABASE progcom;
