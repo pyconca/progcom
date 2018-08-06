@@ -1,6 +1,6 @@
 {%import "vote_display.html" as vd%}
 
-{%macro proposal_render(proposal, anonymize=False, 
+{%macro proposal_render(proposal, anonymize=False,
                         hidetimes=False) %}
 
       {% if not hidetimes %}
@@ -80,7 +80,7 @@
                             {%endif%}
 
                                 " data-val="2"><span class="glyphicon glyphicon-ok" title="Meets Standard"></span></button>
-                            <button type="button"id="standard-id-{{s.id}}-1" 
+                            <button type="button"id="standard-id-{{s.id}}-1"
                             class="btn
                             {% if existing_vote
                                     and existing_vote.scores[s.id] == 1 %}
@@ -194,7 +194,7 @@
         </li>
     {% endfor %}
     </ul>
-    
+
     {% if unread %}
     <div class="panel-body">
 

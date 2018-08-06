@@ -47,16 +47,37 @@ TALK_IDS_FORCE = [1553, 1554, 1555, 1556, 1557, 1559, 1560, 1561, 1562, 1565,
                   1581, 1582, 1583, 1584, 1585, 1586, 1587, 1590, 2057, 2134,
                   2135, 2136, 2143, 2144, 2145, 2210]
 """
-TALK_IDS_FORCE = []
+TALK_IDS_FORCE = [] # Default list
 
 def fetch_ids():
     raw = api_call('/2017/pycon_api/proposals/?type=talk&limit=5000&status=undecided')
     #print len(raw['data'])
-    rv = [x['id'] for x in raw['data']]
+    rv = [x['id'] for x in raw['data']] # List[int]
     return list(set(TALK_IDS_FORCE + rv + l.get_all_proposal_ids()))
 
 def fetch_talk(id):
+    """ Fetch the talk and reformat the data.
+
+        Given::
+
+            {
+                "data": List[{
+                    "speakers" : Iterable,
+                    "details"  : Iterable,
+                    ...
+                }]
+            }
+
+        Returns::
+
+            List[{
+                ... # all from "data", without "speakers" and "details"
+                "authors" : Iterable, # from "speakers",
+                ... # all from "details"
+            }]
+    """
     rv = api_call('/2017/pycon_api/proposals/{}/'.format(id))
+    # ``rv`` is expected to have key "data".
     if not rv or 'data' not in rv:
         return {}
     rv = rv['data']
@@ -81,4 +102,3 @@ if __name__ == '__main__':
     except:
         raven_client.captureException()
         sys.exit(1)
-

@@ -162,7 +162,7 @@ def get_proposal(id):
         return None
     return _clean_proposal(raw._asdict())
 
-def add_proposal(data):
+def add_proposal(data, upsert = True):
     data = data.copy()
     emails, names = zip(*((x['email'], x['name']) for x in data['authors']))
     del data['authors']
@@ -190,6 +190,9 @@ def add_proposal(data):
 
     if proposal.data == cleaned_data:
         return None
+
+    if not upsert:
+        return data['id']
 
     q = 'UPDATE proposals SET data=%s, data_history=%s, updated=now() WHERE id=%s'
     new_data = cleaned_data.copy()
